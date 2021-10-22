@@ -1,0 +1,38 @@
+
+/*--- for tag ---*/
+table, td, th{
+	border: 1px solid black;
+}
+th{
+	background-color: silver;
+}
+
+/*--- for class ---*/
+.regular_font{
+	font-size: 14px;
+	color: navi;
+}
+.input_button{
+	width: 180px;
+	height: 30px;
+}
+.input_number{
+	width: 80px;
+	text-align:right;
+}
+.input_text{
+	width: 180px;
+}
+
+.th_width_short{
+	width: 90px;
+}
+.th_width_middle{
+	width: 180px;
+}
+.th_width_semilong{
+	width: 270px;
+}
+.th_width_long{
+	width: 360px;
+}

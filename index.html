@@ -1,0 +1,665 @@
+<!DOCTYPE html> <!-- HTMLで記述 -->
+<html>
+
+	<!--メタ情報 -->
+	<head>
+		<title>クトゥルフ第6版 シート作成</title>
+		<meta charset="utf-8" /> <!-- 文字コードの動的指定。文字化け防止、HTML5～の記述法 -->
+		<script type="text/javascript" src="./js/jquery/jquery-3.1.1.min.js" ></script>
+		<link rel="shortcut icon" href="./img/applications-cthulhu.ico">
+		<link rel="stylesheet" href="./css/main.css">
+	</head>
+
+	<!-- 本文 -->
+	<body>
+
+		<h2>クトゥルフ第6版 シート作成</h2>
+
+		<div class="regular_font">
+			<input type="button" id="print_page" class="input_button" value="印刷"></input>
+			<input type="button" id="download_data" class="input_button" value="ファイルダウンロード"></input>
+			<input type="button" id="upload_data" class="input_button" value="ファイル読み込み"></input><input type="file" id="upload_data_file" style="display:none;"></input><br>
+			<br>
+			<span id="alert_message" style="color: red;"></span><br>
+		</div>
+
+		<h3>１．探索者情報</h3>
+
+		<div class="regular_font">
+			探索者の基本情報を設定します　　　※職業は「３．探索者の技能」で記入<br>
+			<br>
+
+			探索者名：　<input type="text" id="person_name" class="input_text" value=""></input>
+			　学校・学位　：　<input type="text" id="person_degree" class="input_text" value=""></input><br>
+
+			出身　　：　<input type="text" id="person_from" class="input_text" value=""></input>
+			　精神的な障害：　<input type="text" id="person_illness" class="input_text" value=""></input><br>
+
+			性別　　：　<input type="text" id="person_gender" class="input_text" value=""></input>
+			　年齢　　　　：　<input type="number" id="person_age" class="input_number" value="0" min="0" max="120"></input>歳<br>
+		</div>
+
+		<h3>２．能力値および能力値ロール</h3>
+
+		<div class="regular_font">
+			各能力値を決めるため、ダイスをロールします　　　<input type="button" id="btn_roll" class="input_button" value="ロール"></input><br>
+			<br>
+			<table>
+			<tr><th class="th_width_middle">能力</th><th class="th_width_semilong">決め方</th><th class="th_width_short">能力値</th><th class="th_width_long">目安</th></tr>
+			<tr><td>STR</td><td>3d6</td><td><span id="val_str"></span></td><td><span id="expl_str"></span></td></tr>
+			<tr><td>DEX</td><td>3d6</td><td><span id="val_dex"></span></td><td><span id="expl_dex"></span></td></tr>
+			<tr><td>INT</td><td>2d6+6</td><td><span id="val_int"></span></td><td><span id="expl_int"></span></td></tr>
+			<tr><td>アイデア</td><td>INTx5</td><td><span id="val_idea"></span></td><td><span id="expl_idea"></span></td></tr>
+			<tr><td>CON</td><td>3d6</td><td><span id="val_con"></span></td><td><span id="expl_con"></span></td></tr>
+			<tr><td>APP</td><td>3d6</td><td><span id="val_app"></span></td><td><span id="expl_app"></span></td></tr>
+			<tr><td>POW</td><td>3d6</td><td><span id="val_pow"></span></td><td><span id="expl_pow"></span></td></tr>
+			<tr><td>幸運</td><td>POWx5</td><td><span id="val_luck"></span></td><td><span id="expl_luck"></span></td></tr>
+			<tr><td>SIZ</td><td>2d6+6</td><td><span id="val_siz"></span></td><td><span id="expl_siz"></span></td></tr>
+			<tr><td>SAN</td><td>POWx5</td><td><span id="val_san"></span></td><td><span id="expl_san"></span></td></tr>
+			<tr><td>EDU</td><td>3d6+3</td><td><span id="val_edu"></span></td><td><span id="expl_edu"></span></td></tr>
+			<tr><td>知識</td><td>EDUx5</td><td><span id="val_knld"></span></td><td><span id="expl_knld"></span></td></tr>
+			<tr><td>最大正気度</td><td>99-クトゥルフ神話技能</td><td><span id="val_msan"></span></td><td><span id="expl_msan"></span></td></tr>
+			<tr><td>ダメージボーナス</td><td>（STR+SIZ別※）</td><td><span id="val_dmb"></span></td><td><span id="expl_dmb"></span></td></tr>
+			</table>
+
+			※ダメージボーナス　2-12：-1d6、13-16：-1d4、17-24：0、25-32：1d4、33-40：1d6<br>
+			<br>
+
+			<table>
+			<tr><th class="th_width_middle">項目</th><th class="th_width_semilong">決め方</th><th class="th_width_short">能力値<br>（初期）</th></tr>
+			<tr><td>正気度ポイント</td><td>[SAN]</td><td><span id="val_pt_san"></span></td></tr>
+			<tr><td>マジックポイント</td><td>[POW]</td><td><span id="val_pt_magic"></span></td></tr>
+			<tr><td>耐久力</td><td>[(SIZ＋CON)/2]</td><td><span id="val_pt_edr"></span></td></tr>
+			</table>
+			<br>
+		</div>
+
+		<h3>３．探索者の技能</h3>
+
+		<div class="regular_font">
+			能力値と職業に応じて、探索者の技能を振ります<br>
+			<br>
+
+			探索者の職業　：　<input type="text" id="person_job_name" class="input_text" value=""></input>
+			　※各技能の合計%最大値：　<input type="number" id="val_each_max" class="input_number" value="80" min="0" max="100"></input><br>
+			<br>
+
+			<table>
+			<tr><th class="th_width_middle">技能</th><th class="th_width_semilong">決め方</th><th class="th_width_short">加算計%</th><th class="th_width_short">残加算%</th></tr>
+			<tr><td>職業</td><td>[EDUx20]</td><td><span id="val_job_sum">0</span></td><td><span id="val_job_avail">0</span></td></tr>
+			<tr><td>任意</td><td>[INTx10]</td><td><span id="val_opt_sum">0</span></td><td><span id="val_opt_avail">0</span></td></tr>
+			</table>
+			<br>
+
+			■基本系<br>
+			<table>
+			<tr><th class="th_width_long">技能</th><th class="th_width_short">初期%</th><th class="th_width_short">職業加算%</th><th class="th_width_short">任意加算%</th><th class="th_width_short">合計%</th></tr>
+			<tr>
+				<td>言いくるめ</td>
+				<td><span id="val_init_fast_talk">5</span></td>
+				<td><input type="number" id="val_job_fast_talk" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_fast_talk" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_fast_talk"></span></td>
+			</tr>
+			<tr>
+				<td>医学</td>
+				<td><span id="val_init_medicine">5</span></td>
+				<td><input type="number" id="val_job_medicine" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_medicine" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_medicine"></span></td>
+			</tr>
+			<tr>
+				<td>運転（自動車）</td>
+				<td><span id="val_init_drive_car">20</span></td>
+				<td><input type="number" id="val_job_drive_car" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_drive_car" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_drive_car"></span></td>
+			</tr>
+			<tr>
+				<td>運転（<input type="text" id="text_drive" class="input_text" value=""></input>）</td>
+				<td><span id="val_init_drive">20</span></td>
+				<td><input type="number" id="val_job_drive" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_drive" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_drive"></span></td>
+			</tr>
+			<tr>
+				<td>応急手当</td>
+				<td><span id="val_init_first_aid">30</span></td>
+				<td><input type="number" id="val_job_first_aid" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_first_aid" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_first_aid"></span></td>
+			</tr>
+			<tr>
+				<td>オカルト</td>
+				<td><span id="val_init_occult">5</span></td>
+				<td><input type="number" id="val_job_occult" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_occult" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_occult"></span></td>
+			</tr>
+			<tr>
+				<td>回避（[DEXx2]）</td>
+				<td><span id="val_init_dodge"></span></td>
+				<td><input type="number" id="val_job_dodge" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_dodge" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_dodge"></span></td>
+			</tr>
+			<tr>
+				<td>化学</td>
+				<td><span id="val_init_chemistry">1</span></td>
+				<td><input type="number" id="val_job_chemistry" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_chemistry" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_chemistry"></span></td>
+			</tr>
+			<tr>
+				<td>鍵開け</td>
+				<td><span id="val_init_locksmith">1</span></td>
+				<td><input type="number" id="val_job_locksmith" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_locksmith" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_locksmith"></span></td>
+			</tr>
+			<tr>
+				<td>隠す</td>
+				<td><span id="val_init_conceal">15</span></td>
+				<td><input type="number" id="val_job_conceal" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_conceal" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_conceal"></span></td>
+			</tr>
+			<tr>
+				<td>隠れる</td>
+				<td><span id="val_init_hide">10</span></td>
+				<td><input type="number" id="val_job_hide" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_hide" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_hide"></span></td>
+			</tr>
+			<tr>
+				<td>機械修理</td>
+				<td><span id="val_init_mechanical_repair">20</span></td>
+				<td><input type="number" id="val_job_mechanical_repair" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_mechanical_repair" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_mechanical_repair"></span></td>
+			</tr>
+			<tr>
+				<td>聞き耳</td>
+				<td><span id="val_init_listen">25</span></td>
+				<td><input type="number" id="val_job_listen" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_listen" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_listen"></span></td>
+			</tr>
+			<tr>
+				<td>クトゥルフ神話</td>
+				<td><span id="val_init_cthulhu_mythos">0</span></td>
+				<td><input type="number" id="val_job_cthulhu_mythos" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_cthulhu_mythos" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_cthulhu_mythos"></span></td>
+			</tr>
+			<tr>
+				<td>芸術（<input type="text" id="text_art_1" class="input_text" value=""></input>）</td>
+				<td><span id="val_init_art_1">5</span></td>
+				<td><input type="number" id="val_job_art_1" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_art_1" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_art_1"></span></td>
+			</tr>
+			<tr>
+				<td>芸術（<input type="text" id="text_art_2" class="input_text" value=""></input>）</td>
+				<td><span id="val_init_art_2">5</span></td>
+				<td><input type="number" id="val_job_art_2" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_art_2" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_art_2"></span></td>
+			</tr>
+			<tr>
+				<td>経理</td>
+				<td><span id="val_init_accounting">10</span></td>
+				<td><input type="number" id="val_job_accounting" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_accounting" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_accounting"></span></td>
+			</tr>
+			<tr>
+				<td>考古学</td>
+				<td><span id="val_init_archaeology">1</span></td>
+				<td><input type="number" id="val_job_archaeology" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_archaeology" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_archaeology"></span></td>
+			</tr>
+			<tr>
+				<td>コンピューター</td>
+				<td><span id="val_init_computer_use">1</span></td>
+				<td><input type="number" id="val_job_computer_use" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_computer_use" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_computer_use"></span></td>
+			</tr>
+			<tr>
+				<td>忍び歩き</td>
+				<td><span id="val_init_sneak">10</span></td>
+				<td><input type="number" id="val_job_sneak" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_sneak" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_sneak"></span></td>
+			</tr>
+			<tr>
+				<td>写真術</td>
+				<td><span id="val_init_photography">10</span></td>
+				<td><input type="number" id="val_job_photography" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_photography" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_photography"></span></td>
+			</tr>
+			<tr>
+				<td>重機械操作</td>
+				<td><span id="val_init_operate_heavy_machine">1</span></td>
+				<td><input type="number" id="val_job_operate_heavy_machine" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_operate_heavy_machine" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_operate_heavy_machine"></span></td>
+			</tr>
+			<tr>
+				<td>乗馬</td>
+				<td><span id="val_init_ride">5</span></td>
+				<td><input type="number" id="val_job_ride" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_ride" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_operate_heavy_machine"></span></td>
+			</tr>
+			<tr>
+				<td>信用</td>
+				<td><span id="val_init_credit_rating">15</span></td>
+				<td><input type="number" id="val_job_credit_rating" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_credit_rating" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_credit_rating"></span></td>
+			</tr>
+			<tr>
+				<td>心理学</td>
+				<td><span id="val_init_psychology">5</span></td>
+				<td><input type="number" id="val_job_psychology" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_psychology" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_psychology"></span></td>
+			</tr>
+			<tr>
+				<td>人類学</td>
+				<td><span id="val_init_anthropology">1</span></td>
+				<td><input type="number" id="val_job_anthropology" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_anthropology" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_anthropology"></span></td>
+			</tr>
+			<tr>
+				<td>水泳</td>
+				<td><span id="val_init_swim">25</span></td>
+				<td><input type="number" id="val_job_swim" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_swim" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_swim"></span></td>
+			</tr>
+			<tr>
+				<td>制作（<input type="text" id="text_creator_1" class="input_text" value=""></input>）</td>
+				<td><span id="val_init_creator_1">5</span></td>
+				<td><input type="number" id="val_job_creator_1" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_creator_1" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_creator_1"></span></td>
+			</tr>
+			<tr>
+				<td>制作（<input type="text" id="text_creator_2" class="input_text" value=""></input>）</td>
+				<td><span id="val_init_creator_2">5</span></td>
+				<td><input type="number" id="val_job_creator_2" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_creator_2" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_creator_2"></span></td>
+			</tr>
+			<tr>
+				<td>精神分析</td>
+				<td><span id="val_init_psychoanalysis">1</span></td>
+				<td><input type="number" id="val_job_psychoanalysis" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_psychoanalysis" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_psychoanalysis"></span></td>
+			</tr>
+			<tr>
+				<td>生物学</td>
+				<td><span id="val_init_biology">1</span></td>
+				<td><input type="number" id="val_job_biology" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_biology" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_biology"></span></td>
+			</tr>
+			<tr>
+				<td>説得</td>
+				<td><span id="val_init_persuade">15</span></td>
+				<td><input type="number" id="val_job_persuade" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_persuade" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_persuade"></span></td>
+			</tr>
+			<tr>
+				<td>操縦（<input type="text" id="text_pilot_1" class="input_text" value=""></input>）</td>
+				<td><span id="val_init_pilot_1">1</span></td>
+				<td><input type="number" id="val_job_pilot_1" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_pilot_1" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_pilot_1"></span></td>
+			</tr>
+			<tr>
+				<td>操縦（<input type="text" id="text_pilot_2" class="input_text" value=""></input>）</td>
+				<td><span id="val_init_pilot_2">1</span></td>
+				<td><input type="number" id="val_job_pilot_2" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_pilot_2" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_pilot_2"></span></td>
+			</tr>
+			<tr>
+				<td>地質学</td>
+				<td><span id="val_init_geology">1</span></td>
+				<td><input type="number" id="val_job_geology" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_geology" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_geology"></span></td>
+			</tr>
+			<tr>
+				<td>跳躍</td>
+				<td><span id="val_init_jump">25</span></td>
+				<td><input type="number" id="val_job_jump" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_jump" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_jump"></span></td>
+			</tr>
+			<tr>
+				<td>追跡</td>
+				<td><span id="val_init_track">10</span></td>
+				<td><input type="number" id="val_job_track" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_track" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_track"></span></td>
+			</tr>
+			<tr>
+				<td>電気修理</td>
+				<td><span id="val_init_electrical_repair">10</span></td>
+				<td><input type="number" id="val_job_electrical_repair" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_electrical_repair" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_electrical_repair"></span></td>
+			</tr>
+			<tr>
+				<td>電子工学</td>
+				<td><span id="val_init_electronics">1</span></td>
+				<td><input type="number" id="val_job_electronics" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_electronics" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_electronics"></span></td>
+			</tr>
+			<tr>
+				<td>天文学</td>
+				<td><span id="val_init_astronomy">1</span></td>
+				<td><input type="number" id="val_job_astronomy" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_astronomy" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_astronomy"></span></td>
+			</tr>
+			<tr>
+				<td>投擲</td>
+				<td><span id="val_init_throw">40</span></td>
+				<td><input type="number" id="val_job_throw" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_throw" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_throw"></span></td>
+			</tr>
+			<tr>
+				<td>図書館</td>
+				<td><span id="val_init_library_use">25</span></td>
+				<td><input type="number" id="val_job_library_use" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_library_use" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_library_use"></span></td>
+			</tr>
+			<tr>
+				<td>ナビゲート</td>
+				<td><span id="val_init_navigate">10</span></td>
+				<td><input type="number" id="val_job_navigate" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_navigate" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_navigate"></span></td>
+			</tr>
+			<tr>
+				<td>値切り</td>
+				<td><span id="val_init_bargain">5</span></td>
+				<td><input type="number" id="val_job_bargain" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_bargain" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_bargain"></span></td>
+			</tr>
+			<tr>
+				<td>博物学</td>
+				<td><span id="val_init_natural_history">10</span></td>
+				<td><input type="number" id="val_job_natural_history" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_natural_history" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_natural_history"></span></td>
+			</tr>
+			<tr>
+				<td>物理学</td>
+				<td><span id="val_init_physics">1</span></td>
+				<td><input type="number" id="val_job_physics" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_physics" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_physics"></span></td>
+			</tr>
+			<tr>
+				<td>変装</td>
+				<td><span id="val_init_disguise">1</span></td>
+				<td><input type="number" id="val_job_disguise" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_disguise" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_disguise"></span></td>
+			</tr>
+			<tr>
+				<td>法律</td>
+				<td><span id="val_init_law">5</span></td>
+				<td><input type="number" id="val_job_law" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_law" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_law"></span></td>
+			</tr>
+			<tr>
+				<td>ほかの言語（<input type="text" id="text_other_language_1" class="input_text" value=""></input>）</td>
+				<td><span id="val_init_other_language_1">1</span></td>
+				<td><input type="number" id="val_job_other_language_1" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_other_language_1" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_other_language_1"></span></td>
+			</tr>
+			<tr>
+				<td>ほかの言語（<input type="text" id="text_other_language_2" class="input_text" value=""></input>）</td>
+				<td><span id="val_init_other_language_2">1</span></td>
+				<td><input type="number" id="val_job_other_language_2" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_other_language_2" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_other_language_2"></span></td>
+			</tr>
+			<tr>
+				<td>母国語（[EDUx5]）</td>
+				<td><span id="val_init_own_language"></span></td>
+				<td><input type="number" id="val_job_own_language" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_own_language" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_own_language"></span></td>
+			</tr>
+			<tr>
+				<td>マーシャルアーツ</td>
+				<td><span id="val_init_martial_arts">1</span></td>
+				<td><input type="number" id="val_job_martial_arts" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_martial_arts" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_martial_arts"></span></td>
+			</tr>
+			<tr>
+				<td>目星</td>
+				<td><span id="val_init_spot_hidden">25</span></td>
+				<td><input type="number" id="val_job_spot_hidden" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_spot_hidden" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_spot_hidden"></span></td>
+			</tr>
+			<tr>
+				<td>薬学</td>
+				<td><span id="val_init_pharmacy">1</span></td>
+				<td><input type="number" id="val_job_pharmacy" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_pharmacy" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_pharmacy"></span></td>
+			</tr>
+			<tr>
+				<td>歴史</td>
+				<td><span id="val_init_history">20</span></td>
+				<td><input type="number" id="val_job_history" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_history" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_history"></span></td>
+			</tr>
+			<tr>
+				<td>サバイバル</td>
+				<td><span id="val_init_survival">10</span></td>
+				<td><input type="number" id="val_job_survival" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_survival" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_survival"></span></td>
+			</tr>
+			<tr>
+				<td>居合</td>
+				<td><span id="val_init_iai">1</span></td>
+				<td><input type="number" id="val_job_iai" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_iai" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_iai"></span></td>
+			</tr>
+			<tr>
+				<td>武道（<input type="text" id="text_military_arts" class="input_text" value=""></input>）</td>
+				<td><span id="val_init_military_arts">1</span></td>
+				<td><input type="number" id="val_job_military_arts" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_military_arts" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_military_arts"></span></td>
+			</tr>
+			<tr>
+				<td>その他（<input type="text" id="text_others_1" class="input_text" value=""></input>）</td>
+				<td><span id="val_init_others_1">0</span></td>
+				<td><input type="number" id="val_job_others_1" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_others_1" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_others_1"></span></td>
+			</tr>
+			<tr>
+				<td>その他（<input type="text" id="text_others_2" class="input_text" value=""></input>）</td>
+				<td><span id="val_init_others_2">0</span></td>
+				<td><input type="number" id="val_job_others_2" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_others_2" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_others_2"></span></td>
+			</tr>
+			</table>
+			■火器<br>
+			<table>
+			<tr><th class="th_width_long">技能</th><th class="th_width_short">初期%</th><th class="th_width_short">職業加算%</th><th class="th_width_short">任意加算%</th><th class="th_width_short">合計%</th></tr>
+			<tr>
+				<td>拳銃</td>
+				<td><span id="val_init_handgun">20</span></td>
+				<td><input type="number" id="val_job_handgun" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_handgun" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_handgun"></span></td>
+			</tr>
+			<tr>
+				<td>サブマシンガン</td>
+				<td><span id="val_init_submachine_gun">15</span></td>
+				<td><input type="number" id="val_job_submachine_gun" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_submachine_gun" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_submachine_gun"></span></td>
+			</tr>
+			<tr>
+				<td>ショットガン</td>
+				<td><span id="val_init_shotgun">30</span></td>
+				<td><input type="number" id="val_job_shotgun" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_shotgun" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_shotgun"></span></td>
+			</tr>
+			<tr>
+				<td>マシンガン</td>
+				<td><span id="val_init_machine_gun">15</span></td>
+				<td><input type="number" id="val_job_machine_gun" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_machine_gun" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_machine_gun"></span></td>
+			</tr>
+			<tr>
+				<td>ライフル</td>
+				<td><span id="val_init_rifle">25</span></td>
+				<td><input type="number" id="val_job_rifle" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_rifle" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_rifle"></span></td>
+			</tr>
+			<tr>
+				<td>その他（<input type="text" id="text_other_weapon" class="input_text" value=""></input>）</td>
+				<td><span id="val_init_other_weapon">0</span></td>
+				<td><input type="number" id="val_job_other_weapon" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_other_weapon" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_other_weapon"></span></td>
+			</tr>
+			</table>
+			■武器<br>
+			<table>
+			<tr><th class="th_width_short">技能</th><th class="th_width_semilong">ダメージ</th><th class="th_width_short">初期%</th><th class="th_width_short">職業加算%</th><th class="th_width_short">任意加算%</th><th class="th_width_short">合計%</th></tr>
+			<tr>
+				<td>キック</td>
+				<td>1d6＋ダメージボーナス</td>
+				<td><span id="val_init_kick">25</span></td>
+				<td><input type="number" id="val_job_kick" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_kick" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_kick"></span></td>
+			</tr>
+			<tr>
+				<td>組み付き</td>
+				<td>特殊</td>
+				<td><span id="val_init_grapple">25</span></td>
+				<td><input type="number" id="val_job_grapple" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_grapple" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_grapple"></span></td>
+			</tr>
+			<tr>
+				<td>こぶし</td>
+				<td>1d3＋ダメージボーナス</td>
+				<td><span id="val_init_punch">50</span></td>
+				<td><input type="number" id="val_job_punch" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_punch" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_punch"></span></td>
+			</tr>
+			<tr>
+				<td>頭突き</td>
+				<td>1d4＋ダメージボーナス</td>
+				<td><span id="val_init_head_butt">10</span></td>
+				<td><input type="number" id="val_job_head_butt" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><input type="number" id="val_opt_head_butt" class="input_number" value="0" min="0" max="100"></input></td>
+				<td><span id="val_head_butt"></span></td>
+			</tr>
+			</table>
+			<br>
+		</div>
+
+		<h3>４．探索者のデータ</h3>
+
+		<div class="regular_font">
+			探索者の詳細情報を設定します<br>
+			<br>
+
+			住所：　<br>
+			<textarea id="person_address" class="input_textarea" rows="4" cols="80"></textarea><br>
+
+			描写：　<br>
+			<textarea id="person_depiction" class="input_textarea" rows="4" cols="80"></textarea><br>
+
+			家族＆友人：　<br>
+			<textarea id="person_neibor" class="input_textarea" rows="4" cols="80"></textarea><br>
+
+			狂気の症状：　<br>
+			<textarea id="person_illness_symptoms" class="input_textarea" rows="4" cols="80"></textarea><br>
+
+			負傷：　<br>
+			<textarea id="person_injured" class="input_textarea" rows="4" cols="80"></textarea><br>
+
+			傷跡など：　<br>
+			<textarea id="person_scar" class="input_textarea" rows="4" cols="80"></textarea><br>
+			<br>
+
+			年収：　
+			<input type="number" id="person_income" class="input_number" value="0" min="0" style="text-align:right;"></input>円
+			　手持ち現金：　
+			<input type="number" id="person_cash_on_hand" class="input_number" value="0" min="0" style="text-align:right;"></input>円
+			　預金：　
+			<input type="number" id="person_deposit" class="input_number" value="0" min="0" style="text-align:right;"></input>円<br>
+			<br>
+
+			個人資産：　<br>
+			<textarea id="person_personal_assets" class="input_textarea" rows="4" cols="80"></textarea><br>
+
+			不動産：　<br>
+			<textarea id="person_real_estate" class="input_textarea" rows="4" cols="80"></textarea><br>
+			<br>
+
+			読んだクトゥルフの魔導書：　<br>
+			<textarea id="person_book_of_magic" class="input_textarea" rows="15" cols="80"></textarea><br>
+			<br>
+
+			冒険者の装備とその他の所持品：　<br>
+			<textarea id="person_items" class="input_textarea" rows="15" cols="80"></textarea><br>
+			<br>
+
+			遭遇した超自然の存在：　<br>
+			<textarea id="person_unnatural" class="input_textarea" rows="15" cols="80"></textarea><br>
+			<br>
+		</div>
+
+		<h3>参考サイト</h3>
+		<div class="regular_font">
+			<li><a href="https://w.atwiki.jp/a4trpg/pages/21.html" target="_blank">職業一覧（6版） - えいよん卓@wiki - atwiki（アットウィキ）</a></li>
+			<li><a href="https://kyo-san-dayo.jimdofree.com/%E8%83%BD%E5%8A%9B%E5%80%A4%E3%81%AE%E5%8F%82%E8%80%83/" target="_blank">能力値 - 個人的CoCまとめ</a></li>
+		</div>
+
+		<!-- 処理内容 -->
+		<script type="text/javascript" src="./js/main.js" ></script>
+	</body>
+</html>
