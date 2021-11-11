@@ -474,11 +474,17 @@ function saveData(){
 
 		person_data["skill"][key]["job"] = Number($("#val_job_" + key).val());
 		person_data["skill"][key]["opt"] = Number($("#val_opt_" + key).val());
-		person_temp_data["skill"][key]["sum"] = person_data["skill"][key]["job"] + person_data["skill"][key]["opt"];
+		person_temp_data["skill"][key]["sum"] = person_temp_data["skill"][key]["init"] + person_data["skill"][key]["job"] + person_data["skill"][key]["opt"];
 
 		if(person_temp_data["skill"][key]["sum"] > person_temp_data["val_each_max"]){
-			person_temp_data["skill"][key]["flg_over_max"] = 1;
-			num_skill_over_max++;
+			// Note: if already exceeded only init skill value compared to threshold of skill sum value
+			if(person_temp_data["skill"][key]["init"] > person_temp_data["val_each_max"] &&
+				person_temp_data["skill"][key]["init"] == person_temp_data["skill"][key]["sum"]){
+				person_temp_data["skill"][key]["flg_over_max"] = 0;
+			} else {
+				person_temp_data["skill"][key]["flg_over_max"] = 1;
+				num_skill_over_max++;
+			}
 		} else{
 			person_temp_data["skill"][key]["flg_over_max"] = 0;
 		}
@@ -509,8 +515,8 @@ function showData(flg_update_txt){
 
 	for(let key in person_data["skill"]){
 		$("#val_init_" + key).html(person_temp_data["skill"][key]["init"]);
-		$("#val_job_" + key).html(person_data["skill"][key]["job"]);
-		$("#val_opt_" + key).html(person_data["skill"][key]["opt"]);
+		$("#val_job_" + key).val(person_data["skill"][key]["job"]);
+		$("#val_opt_" + key).val(person_data["skill"][key]["opt"]);
 
 		$("#val_" + key).html(person_temp_data["skill"][key]["sum"]);
 		if(person_temp_data["skill"][key]["flg_over_max"] > 0){
@@ -600,6 +606,7 @@ function uploadPersonData(){
 		}
 	}
 	$("#upload_data_file").val('');
+	updateAlertMessage();
 }
 
 function initPersonTempData(){
@@ -618,11 +625,17 @@ function initPersonTempData(){
 
 	let num_skill_over_max = 0;
 	for(let key in person_data["skill"]){
-		person_temp_data["skill"][key]["sum"] = person_data["skill"][key]["job"] + person_data["skill"][key]["opt"];
+		person_temp_data["skill"][key]["sum"] = person_temp_data["skill"][key]["init"] + person_data["skill"][key]["job"] + person_data["skill"][key]["opt"];
 
 		if(person_temp_data["skill"][key]["sum"] > person_temp_data["val_each_max"]){
-			person_temp_data["skill"][key]["flg_over_max"] = 1;
-			num_skill_over_max++;
+			// Note: if already exceeded only init skill value compared to threshold of skill sum value
+			if(person_temp_data["skill"][key]["init"] > person_temp_data["val_each_max"] &&
+				person_temp_data["skill"][key]["init"] == person_temp_data["skill"][key]["sum"]){
+				person_temp_data["skill"][key]["flg_over_max"] = 0;
+			} else {
+				person_temp_data["skill"][key]["flg_over_max"] = 1;
+				num_skill_over_max++;
+			}
 		} else{
 			person_temp_data["skill"][key]["flg_over_max"] = 0;
 		}
